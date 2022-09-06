@@ -64,13 +64,17 @@ app.delete(
         let { date } = req.body;
         let user_id = req.auth?.sub as string;
 
-        let entry = await Entry.findOne({ where: { date, user_id } });
-
-        if (!entry) {
-            res.sendStatus(StatusCodes.NOT_FOUND);
+        if (!date) {
+            res.status(StatusCodes.BAD_REQUEST).send(`No Date`);
         } else {
-            await entry.destroy();
-            res.sendStatus(StatusCodes.NO_CONTENT);
+            let entry = await Entry.findOne({ where: { date, user_id } });
+
+            if (!entry) {
+                res.sendStatus(StatusCodes.NOT_FOUND);
+            } else {
+                await entry.destroy();
+                res.sendStatus(StatusCodes.NO_CONTENT);
+            }
         }
     }
 );

@@ -144,7 +144,6 @@ function Entry(props) {
                         <button
                             onClick={async () => {
                                 await saveEntry();
-                                setContent('');
                                 setEditing(false);
                                 setRefresh(true);
                             }}
