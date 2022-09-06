@@ -83,27 +83,24 @@ app.patch(
         let { date, content } = req.body;
         let user_id = req.auth?.sub as string;
 
-        const transaction = await sequelize.transaction();
-
         try {
-            let entry = await Entry.findOne({
-                where: { date, user_id },
-                transaction,
+            await sequelize.transaction(async (transaction) => {
+                let entry = await Entry.findOne({
+                    where: { date, user_id },
+                    transaction,
+                });
+
+                if (!entry) {
+                    entry = new Entry({ date, content, user_id });
+                } else {
+                    entry.content = content;
+                }
+
+                await entry.save({ transaction });
+
+                res.sendStatus(StatusCodes.NO_CONTENT);
             });
-
-            if (!entry) {
-                entry = new Entry({ date, content, user_id });
-            } else {
-                entry.content = content;
-            }
-
-            await entry.save({ transaction });
-
-            res.sendStatus(StatusCodes.NO_CONTENT);
-
-            await transaction.commit();
-        } catch (error) {
-            await transaction.rollback();
+        } catch (e) {
             res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
         }
     }
