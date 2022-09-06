@@ -39,15 +39,19 @@ app.post('/entries', checkJwt, express.json(), async (req: JWTRequest, res) => {
     let user_id = req.auth?.sub as string;
 
     if (!date || !content) {
-        res.sendStatus(StatusCodes.BAD_REQUEST);
+        res.status(StatusCodes.BAD_REQUEST).send(
+            `'date ${date}' or 'content ${content}' missing`
+        );
     } else {
-        let entry = await Entry.findOne({ where: { date, user_id } });
-        if (entry) {
-            res.sendStatus(StatusCodes.BAD_REQUEST);
+        let [entry, created] = await Entry.findOrCreate({
+            where: { date, user_id },
+            defaults: { date, content, user_id },
+        });
+
+        if (!created) {
+            res.status(StatusCodes.BAD_REQUEST).send(`Entry already exists`);
         } else {
-            let entry = new Entry({ date, content, user_id });
-            entry.save();
-            res.status(StatusCodes.CREATED).send(JSON.stringify(entry));
+            res.status(StatusCodes.OK).send(JSON.stringify(entry));
         }
     }
 });
@@ -79,16 +83,29 @@ app.patch(
         let { date, content } = req.body;
         let user_id = req.auth?.sub as string;
 
-        let entry = await Entry.findOne({ where: { date, user_id } });
+        const transaction = await sequelize.transaction();
 
-        if (!entry) {
-            entry = new Entry({ date, content, user_id });
-        } else {
-            entry.content = content;
+        try {
+            let entry = await Entry.findOne({
+                where: { date, user_id },
+                transaction,
+            });
+
+            if (!entry) {
+                entry = new Entry({ date, content, user_id });
+            } else {
+                entry.content = content;
+            }
+
+            await entry.save({ transaction });
+
+            res.sendStatus(StatusCodes.NO_CONTENT);
+
+            await transaction.commit();
+        } catch (error) {
+            await transaction.rollback();
+            res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
         }
-
-        await entry.save();
-        res.sendStatus(StatusCodes.NO_CONTENT);
     }
 );
 

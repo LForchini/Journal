@@ -107,3 +107,5 @@ dist
 multiverse-store.sqlite
 
 .DS_Store
+
+journal.db

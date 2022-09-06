@@ -14,10 +14,10 @@ export class Entry extends Model {
 }
 
 export const sequelize = new Sequelize({
-    database: 'journal.db',
+    database: 'journal',
     dialect: 'sqlite',
     username: 'root',
     password: '',
-    storage: ':memory:',
+    storage: 'journal.db',
     models: [Entry],
 });
