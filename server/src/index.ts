@@ -98,7 +98,7 @@ app.patch(
 
                 await entry.save({ transaction });
 
-                res.sendStatus(StatusCodes.NO_CONTENT);
+                res.status(StatusCodes.OK).send(JSON.stringify(entry));
             });
         } catch (e) {
             res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
