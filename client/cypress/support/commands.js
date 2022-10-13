@@ -27,7 +27,6 @@ const jwt = require("jsonwebtoken");
 
 Cypress.Commands.add("loginAuth0", (username, password) => {
     const client_id = Cypress.env("auth0_client_id");
-    const client_secret = Cypress.env("auth0_client_secret");
     const audience = Cypress.env("auth0_audience");
     const scope = Cypress.env("auth0_scope");
 
@@ -41,7 +40,6 @@ Cypress.Commands.add("loginAuth0", (username, password) => {
             audience,
             scope,
             client_id,
-            client_secret,
         },
     };
 
